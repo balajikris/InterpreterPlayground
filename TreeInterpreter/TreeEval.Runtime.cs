@@ -11,6 +11,8 @@ namespace Interpreter
 {
     public partial class TreeEval
     {
+        private IRuntimeLibrary runtimeLibrary;
+
         // some abstract sym table structure to store and look up runtime funcs.
         // signature (name + arglist) could be key, a symbol could be value.
         // structure of symbol - simply a lambda that takes args and knows how to compute result.

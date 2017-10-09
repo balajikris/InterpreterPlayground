@@ -30,6 +30,7 @@ using Antlr.Runtime.Misc;
 using Antlr.Runtime.Tree;
 using RewriteRuleITokenStream = Antlr.Runtime.Tree.RewriteRuleTokenStream;
 using System.Reflection;
+using System.Linq.Expressions;
 
 namespace Interpreter
 {
@@ -80,11 +81,12 @@ public partial class TreeEval : Antlr.Runtime.Tree.TreeParser
 	    private Dictionary<string, BigInteger> globalMemory = new Dictionary<string, BigInteger>();
 		 
 		/** Set up an evaluator with a node stream; and a set of function definition ASTs. */
-	    public TreeEval(CommonTreeNodeStream nodes, List<CommonTree> functionDefinitions)
+	    public TreeEval(CommonTreeNodeStream nodes, List<CommonTree> functionDefinitions, IRuntimeLibrary runtimeLibrary)
 			: base(nodes)
 		{
 	        this.functionDefinitions = functionDefinitions;
-			LoadRuntimeFunctions(); //BALAJIK
+            //LoadRuntimeFunctions(); //BALAJIK
+            this.runtimeLibrary = runtimeLibrary;
 	    }
 
 		/// <summary>
@@ -97,8 +99,9 @@ public partial class TreeEval : Antlr.Runtime.Tree.TreeParser
 		private TreeEval(CommonTree function,
 	                List<CommonTree> functionDefinitions,
 	                Dictionary<string, BigInteger> globalMemory,
-	                BigInteger paramValue)
-				: this(new CommonTreeNodeStream(function.GetChild(2)), functionDefinitions)
+	                BigInteger paramValue,
+                    IRuntimeLibrary runtimeLibrary)
+				: this(new CommonTreeNodeStream(function.GetChild(2)), functionDefinitions, runtimeLibrary)
 	    {
 	        // Expected tree for function: ^(FUNC ID ( INT | ID ) expr)
 	        this.globalMemory = globalMemory;
@@ -130,6 +133,11 @@ public partial class TreeEval : Antlr.Runtime.Tree.TreeParser
 	        }
 	        return null;
 	    }
+
+        private Expression FindRuntimeFunction(string name, Expression[] operands)
+        {
+           return this.runtimeLibrary.GetProvider(name).Operation(operands);
+        }
 
 		private MethodInfo FindRuntimeFunction(string name, Type paramType)
 		{
@@ -745,24 +753,29 @@ public partial class TreeEval : Antlr.Runtime.Tree.TreeParser
 						CommonTree funcRoot = FindFunction((ID8!=null?ID8.Text:null), p);
 						if (funcRoot == null)
 						{
+
+                            var callExpression = FindRuntimeFunction(ID8.Text, 
+                                new Expression[] { Expression.Constant(long.Parse(p.ToString()), typeof(long)) });
+                            var lambda = Expression.Lambda<System.Func<long>>(callExpression).Compile();
+                            value = lambda();
 							// could be a runtime function --- BALAJIK
-							var methodInfo = FindRuntimeFunction((ID8!=null?ID8.Text:null), p.GetType());
-							if(methodInfo == null)
-							{
-								Console.WriteLine("Function " + (ID8!=null?ID8.Text:null) + " with matching args not found");
-							}
-							else
-							{
-                                var temp = (long)methodInfo.Invoke(methodInfo.DeclaringType, new object[] { long.Parse(p.ToString()) });
-                                value = new BigInteger(temp);
-							}
+							//var methodInfo = FindRuntimeFunction((ID8!=null?ID8.Text:null), p.GetType());
+							//if(methodInfo == null)
+							//{
+							//	Console.WriteLine("Function " + (ID8!=null?ID8.Text:null) + " with matching args not found");
+							//}
+							//else
+							//{
+       //                         var temp = (long)methodInfo.Invoke(methodInfo.DeclaringType, new object[] { long.Parse(p.ToString()) });
+       //                         value = new BigInteger(temp);
+							//}
 						}
 						else
 						{
 							// Here we set up the local evaluator to run over the
 							// function definition with the parameter value.
 							// This re-reads a sub-AST of our input AST!
-							TreeEval e = new TreeEval(funcRoot, functionDefinitions, globalMemory, p);
+							TreeEval e = new TreeEval(funcRoot, functionDefinitions, globalMemory, p, this.runtimeLibrary);
 							value = e.expr();
 						}
 					
