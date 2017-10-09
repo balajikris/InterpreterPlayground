@@ -8,35 +8,46 @@ using System.Threading.Tasks;
 
 namespace Interpreter
 {
+    public enum MemberKind
+    {
+        Static,
+        Instance
+    }
+
     public interface IProviderMetadata
     {
-        string Name { get; }
+        string FunctionName { get; }
     }
 
     public interface IScalarFunctionProvider
     {
-        Expression Operation(Expression[] operands);
+        //string MemberName { get; }
+        MemberKind MemberKind { get; }
+    }
+
+    public interface IScalarFunctionMetadataProvider
+    {
+        /// <summary>
+        /// Fully qualified name of the containing type of the scalar function
+        /// </summary>
+        string TypeName { get; }
     }
 
     [Export(typeof(IScalarFunctionProvider))]
-    [ExportMetadata("Name", nameof(Abs))]
-    class Abs : IScalarFunctionProvider
+    [ExportMetadata("FunctionName", nameof(Math.Abs))]
+    class AbsProvider : IScalarFunctionProvider, IScalarFunctionMetadataProvider
     {
-        public Expression Operation(Expression[] operands)
-        {
-            return Expression.Call(typeof(Math), nameof(Abs), null, operands);
-        }
+        public string TypeName => typeof(Math).FullName;
+        public MemberKind MemberKind => MemberKind.Static;
     }
 
 
     [Export(typeof(IScalarFunctionProvider))]
-    [ExportMetadata("Name", nameof(ToInt64))]
-    class ToInt64 : IScalarFunctionProvider
+    [ExportMetadata("FunctionName", nameof(Convert.ToInt64))]
+    class ToInt64Provider : IScalarFunctionProvider, IScalarFunctionMetadataProvider
     {
-        public Expression Operation(Expression[] operands)
-        {
-            return Expression.Call(typeof(Convert), nameof(ToInt64), null, operands);
-        }
+        public string TypeName => typeof(Convert).FullName;
+        public MemberKind MemberKind => MemberKind.Static;
     }
 
     public interface IRuntimeLibrary
@@ -52,7 +63,7 @@ namespace Interpreter
 
         public IScalarFunctionProvider GetProvider(string name)
         {
-            return providers.Single(provider => provider.Metadata.Name.Equals(name)).Value;
+            return providers.Single(provider => provider.Metadata.FunctionName.Equals(name)).Value;
         }
     }
 }

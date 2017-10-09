@@ -134,9 +134,18 @@ public partial class TreeEval : Antlr.Runtime.Tree.TreeParser
 	        return null;
 	    }
 
-        private Expression FindRuntimeFunction(string name, Expression[] operands)
+        private Expression FindRuntimeFunction(string functionName, Expression[] operands)
         {
-           return this.runtimeLibrary.GetProvider(name).Operation(operands);
+            var provider = this.runtimeLibrary.GetProvider(functionName);
+
+            var containingType = provider is IScalarFunctionMetadataProvider
+                ? Type.GetType(((IScalarFunctionMetadataProvider)provider).TypeName)
+                : provider.GetType();
+
+            // todo: generics.
+            return provider.MemberKind == MemberKind.Static
+                ? Expression.Call(containingType, functionName, typeArguments: null, arguments: operands)
+                : Expression.Call(Expression.New(containingType), functionName, typeArguments: null, arguments: operands);
         }
 
 		private MethodInfo FindRuntimeFunction(string name, Type paramType)
