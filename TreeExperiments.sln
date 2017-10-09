@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TreeInterpreter", "TreeInte
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExpressionEvaluator", "ExpressionEvaluator\ExpressionEvaluator.csproj", "{548ADC6F-C408-417F-AC15-8BA18F81AA51}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RuntimeLibrary", "RuntimeLibrary\RuntimeLibrary.csproj", "{651ABE5C-C303-4612-A7EF-CE288A1D8C4C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{548ADC6F-C408-417F-AC15-8BA18F81AA51}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{548ADC6F-C408-417F-AC15-8BA18F81AA51}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{548ADC6F-C408-417F-AC15-8BA18F81AA51}.Release|Any CPU.Build.0 = Release|Any CPU
+		{651ABE5C-C303-4612-A7EF-CE288A1D8C4C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{651ABE5C-C303-4612-A7EF-CE288A1D8C4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{651ABE5C-C303-4612-A7EF-CE288A1D8C4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{651ABE5C-C303-4612-A7EF-CE288A1D8C4C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
